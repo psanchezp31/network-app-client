@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 public class Frame extends JFrame {
 
-    private final CpuUsageService cpuUsageService = new CpuUsageServiceRandomImpl();
+    private final CpuUsageService cpuUsageService = new CpuUsageServiceLocalImpl();
 
     public Frame(final String title) {
         super(title);
@@ -62,8 +62,14 @@ public class Frame extends JFrame {
             window.setLocationRelativeTo(null);
             window.setVisible(true);
             window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            JPanel topPanel = new JPanel();
             JTextArea ipTextArea = new JTextArea();
             JButton connectButton = new JButton("Connect");
+            topPanel.add(ipTextArea);
+            topPanel.add(connectButton);
+            window.add(topPanel, BorderLayout.NORTH);
+
+
         });
     }
 
@@ -82,7 +88,7 @@ public class Frame extends JFrame {
 
         XYPlot plot = chart.getXYPlot();
 
-        var renderer = new XYLineAndShapeRenderer();
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, Color.BLUE);
         renderer.setSeriesStroke(0, new BasicStroke(2.0f));
 
