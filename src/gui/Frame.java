@@ -1,6 +1,5 @@
 package gui;
 
-import com.sun.management.OperatingSystemMXBean;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -10,73 +9,65 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import service.CpuUsageService;
-import service.CpuUsageServiceLocalImpl;
-import service.CpuUsageServiceRandomImpl;
+import service.UpdateChartActionListenerImpl;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.management.ManagementFactory;
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Frame extends JFrame {
 
-    private final CpuUsageService cpuUsageService = new CpuUsageServiceLocalImpl();
+    private static JPanel mainPanel;
+    private final JPanel topPanel;
+    private final JLabel ipLabel;
+    private final JTextField ipTextField;
+    private final JButton connectButton;
+    private final ChartPanel chartPanel;
+    private final JFreeChart chart;
+    private final UpdateChartActionListenerImpl listenerService;
+    private XYLineAndShapeRenderer renderer;
+    private XYPlot plot;
 
     public Frame(final String title) {
         super(title);
         setSystemLookAndFeel();
-        final XYDataset dataset = new XYSeriesCollection();
-        final JFreeChart chart = createChart(dataset);
-        final ChartPanel chartPanel = new ChartPanel(chart);
+        ipLabel = new JLabel("IP: ");
+        ipTextField = new JTextField(20);
+        connectButton = new JButton("Connect");
+        topPanel = new JPanel();
+        topPanel.add(ipLabel);
+        topPanel.add(ipTextField);
+        topPanel.add(connectButton);
+        chart = createChart(new XYSeriesCollection());
+        chartPanel = new ChartPanel(chart);
         chartPanel.setSize(560, 370);
         chartPanel.setMouseZoomable(true, false);
-        setContentPane(chartPanel);
-
-
-        Thread thread = new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                XYDataset dataSetFromCpuData = createDataSetFromCpuData(cpuUsageService.loadAndGetCpuData());
-                chart.getXYPlot().setDataset(dataSetFromCpuData);
-            }
-        });
-        thread.start();
-
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(chartPanel, BorderLayout.CENTER);
+        this.setContentPane(mainPanel);
+        listenerService = new UpdateChartActionListenerImpl(ipTextField, connectButton, chart);
+        connectButton.addActionListener(listenerService);
     }
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
-            OperatingSystemMXBean bean = (com.sun.management.OperatingSystemMXBean) ManagementFactory
-                    .getOperatingSystemMXBean();
-            Frame window = new Frame("CPU Usage");
-            window.setSize(800,600);
+            Frame window = new Frame("Remote CPU Usage");
+            window.setSize(800, 600);
+            window.setResizable(false);
             window.setLocationRelativeTo(null);
             window.setVisible(true);
             window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            JPanel topPanel = new JPanel();
-            JTextArea ipTextArea = new JTextArea();
-            JButton connectButton = new JButton("Connect");
-            topPanel.add(ipTextArea);
-            topPanel.add(connectButton);
-            window.add(topPanel, BorderLayout.NORTH);
-
-
         });
     }
 
     private JFreeChart createChart(XYDataset dataset) {
 
         JFreeChart chart = ChartFactory.createXYLineChart(
-                "CPU Usage",
+                "Remote CPU Usage",
                 "Time (seconds)",
                 "% Utilization",
                 dataset,
@@ -86,43 +77,22 @@ public class Frame extends JFrame {
                 false
         );
 
-        XYPlot plot = chart.getXYPlot();
-
-        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        renderer.setSeriesPaint(0, Color.BLUE);
+        renderer = new XYLineAndShapeRenderer();
+        renderer.setSeriesPaint(0, Color.green);
         renderer.setSeriesStroke(0, new BasicStroke(2.0f));
 
+        plot = chart.getXYPlot();
         plot.setRenderer(renderer);
-        plot.setBackgroundPaint(Color.white);
-
+        plot.setBackgroundPaint(Color.BLACK);
         plot.setRangeGridlinesVisible(true);
         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
-
         plot.setDomainGridlinesVisible(true);
         plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
 
         chart.getLegend().setFrame(BlockBorder.NONE);
-
-        chart.setTitle(new TextTitle("CPU Usage",
-                        new Font("Sans-Serif", java.awt.Font.BOLD, 18)
-                )
-        );
+        chart.setTitle(new TextTitle("Remote CPU Usage", new Font("Sans-Serif", java.awt.Font.BOLD, 18)));
 
         return chart;
-    }
-
-    private XYDataset createDataSetFromCpuData(LinkedList<Double> cpuData) {
-
-        XYSeries series = new XYSeries("CPU Usage");
-
-        for (int i = 0; i < CpuUsageServiceLocalImpl.MAX_COORDINATES_AMOUNT; i++) {
-            series.add(i, cpuData.get(i));
-        }
-
-        XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(series);
-        return dataset;
-
     }
 
     private void setSystemLookAndFeel() {
@@ -136,3 +106,5 @@ public class Frame extends JFrame {
 
 
 }
+
+

@@ -4,13 +4,13 @@ import java.util.LinkedList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CpuUsageServiceRandomImpl implements CpuUsageService {
+import static config.Constants.MAX_COORDINATES_AMOUNT;
 
-    public static final int MAX_COORDINATES_AMOUNT = 60;
+public class RandomCpuUsageServiceImpl implements CpuUsageService {
 
     private final LinkedList<Double> data;
 
-    public CpuUsageServiceRandomImpl() {
+    public RandomCpuUsageServiceImpl() {
         data = Stream.generate(() -> 0.0)
                 .limit(MAX_COORDINATES_AMOUNT)
                 .collect(Collectors.toCollection(LinkedList::new));
