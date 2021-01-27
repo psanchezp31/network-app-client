@@ -32,7 +32,9 @@ public class RemoteCpuUsageServiceImpl implements CpuUsageService {
 
     private void loadCoordinate() {
         try {
-            cpuData.addLast(inputStream.readDouble());
+            double datas = inputStream.readDouble();
+            cpuData.addLast(datas);
+            System.out.println(datas);
         } catch (IOException e) {
             e.printStackTrace();
         }

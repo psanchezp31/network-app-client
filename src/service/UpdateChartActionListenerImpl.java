@@ -45,7 +45,7 @@ public class UpdateChartActionListenerImpl implements ActionListener {
             ipTextField.setEnabled(false);
             connectButton.setText("Disconnect");
             executorService = Executors.newSingleThreadExecutor();
-            executorService.submit(this::ListenLocalAndDrawChart);
+            executorService.submit(this::ListenSocketAndDrawChart);
         }
 
     }
@@ -77,7 +77,7 @@ public class UpdateChartActionListenerImpl implements ActionListener {
                 chart.getXYPlot().setDataset(dataSetFromCpuData);
             }
         } catch (Exception x) {
-            x.printStackTrace();
+            System.out.println("Interupted connection");
         }
 
     }
